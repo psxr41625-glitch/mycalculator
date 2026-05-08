@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ระบบคำนวณผ่อนมือถือ (V.2)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #fff3cd, #ffe0b2);
+            padding: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        h2 { text-align: center; color: #e67e22; }
+        label { font-size: 14px; font-weight: bold; color: #555; }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0 15px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #f39c12;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover { background: #e67e22; }
+        .result {
+            margin-top: 20px;
+            background: #fffdf5;
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid #ffe0b2;
+            line-height: 1.8;
+        }
+        .highlight { color: #d35400; font-weight: bold; }
+        hr { border: 0; border-top: 1px dashed #ccc; margin: 15px 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📱 คำนวณยอดผ่อนมือถือ</h2>
+
+    <label>รุ่นมือถือ</label>
+    <input id="model" placeholder="เช่น iPhone 15 Pro">
+    
+    <label>ราคาเครื่อง (บาท)</label>
+    <input id="price" type="number" placeholder="0">
+    
+    <label>เงินดาวน์ (บาท)</label>
+    <input id="down" type="number" placeholder="0">
+
+    <label>ระยะเวลาผ่อน (เดือน)</label>
+    <select id="month">
+        <option value="3">3 เดือน</option>
+        <option value="4">4 เดือน</option>
+        <option value="5">5 เดือน</option>
+        <option value="6">6 เดือน</option>
+        <option value="7">7 เดือน</option>
+        <option value="8">8 เดือน</option>
+        <option value="9">9 เดือน</option>
+        <option value="10">10 เดือน</option>
+    </select>
+
+    <button onclick="calc()">คำนวณยอดผ่อน</button>
+
+    <div class="result" id="result" style="display:none;"></div>
+</div>
+
+<script>
+function calc() {
+    let model = document.getElementById("model").value || "ไม่ได้ระบุรุ่น";
+    let price = Number(document.getElementById("price").value);
+    let down = Number(document.getElementById("down").value);
+    let month = Number(document.getElementById("month").value);
+
+    if (price <= 0 || price <= down) {
+        alert("กรุณากรอกข้อมูลราคาและเงินดาวน์ให้ถูกต้อง");
+        return;
+    }
+
+    // อัตราตัวคูณที่กำหนดไว้ (Flat Rate โดยประมาณ)
+    let rateMap = {
+        3: 0.3458, 4: 0.2625, 5: 0.2125, 6: 0.1792, 
+        7: 0.1554, 8: 0.1375, 9: 0.1236, 10: 0.1125
+    };
+    
+    let rate = rateMap[month];
+    let loan = price - down; // ยอดจัดสินเชื่อ
+    
+    // คำนวณค่างวดต่อเดือน
+    let basePerMonth = Math.ceil(loan * rate);
+    let lockFeePerMonth = 100; // ค่าธรรมเนียมล็อก
+    let perMonth = basePerMonth + lockFeePerMonth;
+
+    // คำนวณดอกเบี้ย
+    let totalPaidNoDown = perMonth * month; 
+    let totalLockFee = lockFeePerMonth * month;
+    let totalInterest = totalPaidNoDown - loan - totalLockFee;
+    
+    // คำนวณ % ดอกเบี้ย
+    let interestPercentTotal = (totalInterest / loan) * 100;
+    let interestPercentMonth = interestPercentTotal / month;
+
+    // รวมยอดทั้งหมด
+    let grandTotal = totalPaidNoDown + down;
+
+    let resDiv = document.getElementById("result");
+    resDiv.style.display = "block";
+    resDiv.innerHTML = `
+        <center><b>— รายละเอียดการผ่อน —</b></center><br>
+        <b>รุ่น:</b> ${model}<br>
+        <b>ยอดจัดสินเชื่อ:</b> ${loan.toLocaleString()} บาท<br>
+        <hr>
+        <b>ยอดผ่อนต่อเดือน:</b> <span class="highlight">${perMonth.toLocaleString()}</span> บาท<br>
+        <b>ระยะเวลา:</b> ${month} เดือน<br>
+        <b>ดอกเบี้ย:</b> ${interestPercentMonth.toFixed(2)}% ต่อเดือน (รวม ${interestPercentTotal.toFixed(2)}%)<br>
+        <hr>
+        <b>ดอกเบี้ยรวมตลอดสัญญา:</b> ${totalInterest.toLocaleString()} บาท<br>
+        <b>ค่าธรรมเนียมล็อกรวม:</b> ${totalLockFee.toLocaleString()} บาท<br>
+        <b>รวมดอกเบี้ยและค่าธรรมเนียม:</b> ${(totalInterest + totalLockFee).toLocaleString()} บาท<br>
+        <hr>
+        <b>ยอดรวมที่ต้องจ่าย (ไม่รวมดาวน์):</b> ${totalPaidNoDown.toLocaleString()} บาท<br>
+        <b>ยอดรวมทั้งสิ้น (รวมดาวน์):</b> <span class="highlight">${grandTotal.toLocaleString()}</span> บาท
+    `;
+}
+</script>
+
+</body>
+</html>
