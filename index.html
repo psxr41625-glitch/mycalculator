@@ -76,8 +76,10 @@
         <option value="6">6 เดือน</option>
         <option value="7">7 เดือน</option>
         <option value="8">8 เดือน</option>
-        <option value="9">9 เดือน</option>
+        <option value="9">9 เดือน</option>    
         <option value="10">10 เดือน</option>
+        <option value="11">11 เดือน</option>
+        <option value="12">12 เดือน</option>
     </select>
 
     <button onclick="calc()">คำนวณยอดผ่อน</button>
@@ -99,8 +101,9 @@ function calc() {
 
     // อัตราตัวคูณที่กำหนดไว้ (Flat Rate โดยประมาณ)
     let rateMap = {
-        3: 0.3458, 4: 0.2625, 5: 0.2125, 6: 0.1792, 
-        7: 0.1554, 8: 0.1375, 9: 0.1236, 10: 0.2
+        3: 0.3534, 4: 0.2700, 5: 0.2200, 6: 0.1867, 
+        7: 0.1629, 8: 0.1450, 9: 0.1312, 10: 0.1200,
+        11: 0.1131, 12: 0.1054
     };
     
     let rate = rateMap[month];
